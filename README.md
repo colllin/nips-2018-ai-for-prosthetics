@@ -32,7 +32,7 @@
 1. Install pipenv
 
     ```
-    $ pip3.6 install pipenv
+    $ pip3.6 install --user pipenv
     ```
 
 1. Create a virtual environment
