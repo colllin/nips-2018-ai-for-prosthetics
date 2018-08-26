@@ -11,7 +11,7 @@
     $ wget https://anaconda.org/kidzik/opensim/4.0.0/download/linux-64/opensim-4.0.0-py36_17.tar.bz2
     $ mkdir opensim-4.0.0
     $ cd opensim-4.0.0
-    $ tar -bf ~/opensim-4.0.0-py36_17.tar.bz2
+    $ tar -xf ~/opensim-4.0.0-py36_17.tar.bz2
     ```
 
 1. Install python 3.6
