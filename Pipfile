@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+ipykernel = "*"
+"5f8426c" = {file = "https://github.com/stanfordnmbl/osim-rl/archive/master.zip"}
+opensim = {path = "/home/ubuntu/opensim-4.0.0/lib/python3.6/site-packages"}
+pyvirtualdisplay = "*"
+matplotlib = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
