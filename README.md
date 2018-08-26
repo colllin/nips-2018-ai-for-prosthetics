@@ -35,16 +35,10 @@
     $ pip3.6 install --user pipenv
     ```
 
-1. Create a virtual environment
+1. Create a virtual environment & install dependencies
 
     ```
     $ cd nips-2018-ai-for-prosthetics
-    $ pipenv --python 3.6
-    ```
-
-1. Install dependencies
-
-    ```
     $ pipenv install
     ```
 
