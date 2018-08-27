@@ -12,6 +12,7 @@
     $ mkdir opensim-4.0.0
     $ cd opensim-4.0.0
     $ tar -xf ~/opensim-4.0.0-py36_17.tar.bz2
+    $ export PATH=$PATH:/home/ubuntu/opensim-4.0.0/bin
     ```
 
 1. Install python 3.6
