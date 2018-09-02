@@ -12,6 +12,7 @@
     $ mkdir opensim-4.0.0
     $ cd opensim-4.0.0
     $ tar -xf ~/opensim-4.0.0-py36_17.tar.bz2
+    $ export PATH=$PATH:/home/ubuntu/opensim-4.0.0/bin
     ```
 
 1. Install python 3.6
@@ -32,19 +33,13 @@
 1. Install pipenv
 
     ```
-    $ pip3.6 install pipenv
+    $ pip3.6 install --user pipenv
     ```
 
-1. Create a virtual environment
+1. Create a virtual environment & install dependencies
 
     ```
     $ cd nips-2018-ai-for-prosthetics
-    $ pipenv --python 3.6
-    ```
-
-1. Install dependencies
-
-    ```
     $ pipenv install
     ```
 
