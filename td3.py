@@ -1,4 +1,7 @@
+import os
+import math
 import numpy as np
+from tqdm import tqdm
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -15,16 +18,34 @@ class Actor(nn.Module):
         super(Actor, self).__init__()
 
         self.l1 = nn.Linear(state_dim, 400)
+#         print(self.l1.weight)
+#         print(1. / math.sqrt(self.l1.weight.size(1)))
+#         torch.nn.init.xavier_uniform_(self.l1.weight)
+#         torch.nn.init.zeros_(self.l1.bias)
+        
         self.l2 = nn.Linear(400, 300)
+#         torch.nn.init.xavier_uniform_(self.l2.weight)
+#         torch.nn.init.zeros_(self.l2.bias)
+        
         self.l3 = nn.Linear(300, action_dim)
+#         torch.nn.init.xavier_uniform_(self.l3.weight)
+#         torch.nn.init.zeros_(self.l3.bias)
         
         self.max_action = max_action
 
 
     def forward(self, x):
+#         print(f'actor input: {x}')
+#         print(f'l1 weights: {self.l1.weight}')
+#         print(f'l1 bias: {self.l1.bias}')
+#         print(f'l1 output: {self.l1(x)}')
         x = F.relu(self.l1(x))
+#         print(f'l1 activations: {x}')
         x = F.relu(self.l2(x))
+#         print(f'l2 activations: {x}')
+#         print(f'l3 activations: {torch.tanh(self.l3(x))}')
         x = self.max_action * torch.tanh(self.l3(x)) 
+#         print(f'max_action scaling factor: {self.max_action}')
         return x
 
 
@@ -87,15 +108,15 @@ class TD3(object):
 
     def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
 
-        for it in range(iterations):
+        for it in tqdm(range(iterations), desc='Train model', unit='batch'):
 
             # Sample replay buffer 
             x, y, u, r, d = replay_buffer.sample(batch_size)
             state = torch.FloatTensor(x).to(device)
             action = torch.FloatTensor(u).to(device)
             next_state = torch.FloatTensor(y).to(device)
-            done = torch.FloatTensor(1 - d).to(device)
-            reward = torch.FloatTensor(r).to(device)
+            done = torch.FloatTensor(1 - d.reshape(-1,1)).to(device)
+            reward = torch.FloatTensor(r.reshape(-1,1)).to(device)
 
             # Select action according to policy and add clipped noise 
             noise = torch.FloatTensor(u).data.normal_(0, policy_noise).to(device)
@@ -138,11 +159,19 @@ class TD3(object):
                     target_param.data.copy_(tau * param.data + (1 - tau) * target_param.data)
 
 
-    def save(self, filename, directory):
-        torch.save(self.actor.state_dict(), '%s/%s_actor.pth' % (directory, filename))
-        torch.save(self.critic.state_dict(), '%s/%s_critic.pth' % (directory, filename))
+    def save(self, directory, filename):
+        actor_path = '%s/%s_actor.pth' % (directory, filename)
+        critic_path = '%s/%s_critic.pth' % (directory, filename)
+        torch.save(self.actor.state_dict(), actor_path)
+        torch.save(self.critic.state_dict(), critic_path)
 
 
-    def load(self, filename, directory):
-        self.actor.load_state_dict(torch.load('%s/%s_actor.pth' % (directory, filename)))
-        self.critic.load_state_dict(torch.load('%s/%s_critic.pth' % (directory, filename)))
+    def load(self, directory, filename):
+        actor_path = '%s/%s_actor.pth' % (directory, filename)
+        critic_path = '%s/%s_critic.pth' % (directory, filename)
+        if not os.path.exists(actor_path) or not os.path.exists(critic_path):
+            raise RuntimeError(f'File not found: one or both of `{actor_path}`, `{critic_path}`.')
+        self.actor.load_state_dict(torch.load(actor_path))
+        self.critic.load_state_dict(torch.load(critic_path))
+        
+        
