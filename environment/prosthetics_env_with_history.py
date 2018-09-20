@@ -8,7 +8,7 @@ class ProstheticsEnvWithHistory(ProstheticsEnv):
         super(ProstheticsEnvWithHistory, self).__init__(*args, **kwargs)
         
     def reset(self, *args, **kwargs):
-        self.episode_id = uuid.uuid4()
+        self.episode_id = str(uuid.uuid4())
         self.episode_step = 0
         obs = super(ProstheticsEnvWithHistory, self).reset(*args, **kwargs)
         self.append_history({
