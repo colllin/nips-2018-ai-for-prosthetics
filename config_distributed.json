@@ -1,0 +1,36 @@
+{
+    "env": {
+        "integrator_accuracy": 2e-3
+    },
+    "model": {
+        "architecture": "TD3"
+    },
+    "rollout": {
+        "#": "Max number of steps to run for a single episode",
+        "max_episode_steps": 600,
+        "#": "Std of Gaussian exploration noise  # originally 0.1, adjusted due to action binning",
+        "expl_noise": 0.25,
+        "#": "Frameskip will be applied for random durations between 0 and `frameskip` timesteps.",
+        "frameskip": 5
+    },
+    "distributed": {
+        "policy_weights_dir_s3": "s3://colllin-nips-2018-prosthetics/checkpoints/",
+        "policy_weights_dir_local": "./checkpoints/",
+        "policy_weights_basename": "checkpoint_TD3"
+    },
+    "training": {
+        "#": "How often (time steps) we evaluate",
+        "eval_freq": 5e3, 
+        "#": "Batch size for both actor and critic",
+        "batch_size": 100, 
+        "discount": 0.99,
+        "#": "Target network update rate",
+        "tau": 0.005, 
+        "#": "Noise added to target policy during critic update",
+        "policy_noise": 0.2, 
+        "#": "Range to clip target policy noise",
+        "noise_clip": 0.5, 
+        "#": "Frequency of delayed policy updates",
+        "policy_freq": 2 
+    }
+}

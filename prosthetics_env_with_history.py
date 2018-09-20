@@ -4,7 +4,7 @@ from osim.env import ProstheticsEnv
 
 class ProstheticsEnvWithHistory(ProstheticsEnv):
     def __init__(self, *args, **kwargs):
-        self.df_history = pd.DataFrame(columns=['episode_uuid','i_step','action','obs','reward','done','info'])
+        self.reset_history()
         super(ProstheticsEnvWithHistory, self).__init__(*args, **kwargs)
         
     def reset(self, *args, **kwargs):
@@ -44,6 +44,9 @@ class ProstheticsEnvWithHistory(ProstheticsEnv):
             return self.df_history[self.df_history['episode_uuid'] == self.episode_id]
         return self.df_history
     
+    def reset_history(self):
+        self.df_history = pd.DataFrame(columns=['episode_uuid','i_step','action','obs','reward','done','info'])
+
     def save_history(filename):
         pass
         
