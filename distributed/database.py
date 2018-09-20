@@ -1,5 +1,7 @@
 import os
 import math
+import uuid
+import datetime
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
@@ -7,6 +9,8 @@ from pymongo import MongoClient
 
 client = MongoClient(f'mongodb+srv://{os.environ["MONGODB_USERNAME"]}:{os.environ["MONGODB_PASSWORD"]}@cluster0-l6ac3.mongodb.net/ProstheticsEnv?retryWrites=true')
 db = client.ProstheticsEnv
+
+instance_id = str(uuid.uuid4())
 
 # Mutates `obj`
 def without_empty_vals(obj):
@@ -33,4 +37,18 @@ def sample_timesteps(n=100):
     return list(db.timesteps.aggregate([
         {'$sample': {'size': n}},
     ]))
+
+def get_total_timesteps():
+    return db.timesteps.count_documents({})
+
+def persist_event(event_type, body):
+    # Add time and unique process ID
+    db.events.insert_one({
+        'type': event_type,
+        'body': body,
+        'instance_id': instance_id,
+        'created_at': datetime.datetime.now().isoformat(),
+    })
+
+
 

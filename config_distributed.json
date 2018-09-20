@@ -15,12 +15,13 @@
     },
     "distributed": {
         "policy_weights_dir_s3": "s3://colllin-nips-2018-prosthetics/checkpoints/",
-        "policy_weights_dir_local": "./checkpoints/",
-        "policy_weights_basename": "checkpoint_TD3"
+        "policy_weights_basename": "checkpoint_TD3",
+        "#": "How often (episodes) we download model weights during rollout.",
+        "rollout_refresh_model_freq": 5
     },
     "training": {
-        "#": "How often (time steps) we evaluate",
-        "eval_freq": 5e3, 
+        "#": "How often (training batches) we evaluate",
+        "eval_freq": 5e3,
         "#": "Batch size for both actor and critic",
         "batch_size": 100, 
         "discount": 0.99,

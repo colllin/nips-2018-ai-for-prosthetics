@@ -2,9 +2,8 @@ import uuid
 import pandas as pd
 import numpy as np
 
-class EnvHistorySampler(object):
+class DatabaseHistorySampler(object):
     def __init__(self, df_history, env_obs_history_to_model_obs_fn=None, env_obs_custom_reward_fn=None, env_obs_custom_done_fn=None):
-        self.df_history = df_history
         self.env_obs_history_to_model_obs_fn = env_obs_history_to_model_obs_fn
         self.env_obs_custom_reward_fn = env_obs_custom_reward_fn
         self.env_obs_custom_done_fn = env_obs_custom_done_fn
