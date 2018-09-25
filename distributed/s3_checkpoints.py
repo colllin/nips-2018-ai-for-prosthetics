@@ -25,7 +25,7 @@ def save_s3_model_checkpoint(policy, s3_dir, basename):
     policy.save(local_dir, basename)
     
     # Upload model checkpoint
-    subprocess.check_output(f'aws s3 cp {local_dir}* {s3_dir} --no-sign-request', shell=True)
+    subprocess.check_output(f'aws s3 cp {local_dir} {s3_dir} --recursive --no-sign-request', shell=True)
         
     # Remove temp dir
     subprocess.check_output(f'rm -rf {local_dir}', shell=True)

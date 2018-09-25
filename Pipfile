@@ -8,13 +8,13 @@ ipykernel = "*"
 opensim = {path = "/home/ubuntu/opensim-4.0.0/lib/python3.6/site-packages"}
 matplotlib = "*"
 "5f8426c" = {file = "https://github.com/stanfordnmbl/osim-rl/archive/master.zip"}
-torch = {file = "http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl"}
 pandas = "*"
 tqdm = "*"
 tables = "*"
 pymongo = "*"
 python-dotenv = "*"
 dnspython = "*"
+torch = {file = "http://download.pytorch.org/whl/cu92/torch-0.4.1-cp36-cp36m-linux_x86_64.whl"}
 
 [dev-packages]
 

@@ -21,7 +21,7 @@
     },
     "training": {
         "#": "How often (training batches) we evaluate",
-        "eval_freq": 5e3,
+        "eval_freq": 2000,
         "#": "Batch size for both actor and critic",
         "batch_size": 100, 
         "discount": 0.99,

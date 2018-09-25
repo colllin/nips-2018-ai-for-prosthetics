@@ -7,10 +7,27 @@ load_dotenv(find_dotenv())
 
 from pymongo import MongoClient
 
-client = MongoClient(f'mongodb+srv://{os.environ["MONGODB_USERNAME"]}:{os.environ["MONGODB_PASSWORD"]}@cluster0-l6ac3.mongodb.net/ProstheticsEnv?retryWrites=true')
-db = client.ProstheticsEnv
-
+clients = []
 instance_id = str(uuid.uuid4())
+
+def clear_clients_for_thread():
+    while clients: clients.pop()
+
+def get_client_threadsafe():
+    if not clients:
+        clients.append(
+            MongoClient(
+                host=os.environ["MONGODB_HOST"], 
+                username=os.environ["MONGODB_USERNAME"],
+                password=os.environ["MONGODB_PASSWORD"],
+                retryWrites=True,
+            )
+        )
+    return clients[0]
+
+def get_db_threadsafe():
+    return get_client_threadsafe()[os.environ['MONGODB_DATABASE']]
+
 
 # Mutates `obj`
 def without_empty_vals(obj):
@@ -23,6 +40,7 @@ def without_empty_vals(obj):
     return copy
 
 def persist_timesteps(df_timesteps, page_size=150):
+    db = get_db_threadsafe()
     n_pages = math.ceil(len(df_timesteps) / page_size)
     for i in range(n_pages):
         start = i * page_size
@@ -35,21 +53,20 @@ def persist_timesteps(df_timesteps, page_size=150):
     
 
 def sample_timesteps(n=100, n_obs_history=1):
+    db = get_db_threadsafe()
     docs = list(db.timesteps.aggregate([
         {
+            '$sample': {
+                'size': round(n*1.2)
+            }
+        }, {
             '$match': {
                 'i_step': {
                     '$ne': 0
                 }
             }
         }, {
-            '$sample': {
-                'size': n
-            }
-        }, {
-            '$project': {
-                '_id': False
-            }
+            '$limit': n
         }
     ]))
     past_timesteps = db.timesteps.find(
@@ -83,10 +100,12 @@ def sample_timesteps(n=100, n_obs_history=1):
     return docs
 
 def get_total_timesteps():
+    db = get_db_threadsafe()
     return db.timesteps.count_documents({})
 
 def persist_event(event_type, body):
-    # Add time and unique process ID
+    db = get_db_threadsafe()
+    # Add timestamp and unique process ID
     db.events.insert_one({
         'type': event_type,
         'body': body,
