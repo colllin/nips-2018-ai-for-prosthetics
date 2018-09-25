@@ -338,10 +338,11 @@ def single_step_env_obs_to_model_obs(env_obs, target_vel=[3,0,0], exclude_lower_
         highest_order += env_obs["joint_acc"][joint]
 
     for muscle in sorted(env_obs["muscles"].keys()):
-        highest_order += [env_obs["muscles"][muscle]["activation"]]
-        highest_order += [env_obs["muscles"][muscle]["fiber_length"]]
-        highest_order += [env_obs["muscles"][muscle]["fiber_velocity"]]
-        highest_order += [env_obs["muscles"][muscle]["fiber_force"]]
+        # Possible osim-rl bug: It appears that muscle values are ommitted when they are 0.
+        highest_order += [env_obs["muscles"][muscle].get("activation", 0.)]
+        highest_order += [env_obs["muscles"][muscle].get("fiber_length", 0.)]
+        highest_order += [env_obs["muscles"][muscle].get("fiber_velocity", 0.)]
+        highest_order += [env_obs["muscles"][muscle].get("fiber_force", 0.)] 
 
     for force in ['abd_l', 'add_l', 'hamstrings_l', 'bifemsh_l', 'glut_max_l', 'iliopsoas_l', 'rect_fem_l', 'vasti_l', 'gastroc_l', 'soleus_l', 'tib_ant_l', 'ankleSpring', 'pros_foot_r_0', 'foot_l', 'HipLimit_l', 'KneeLimit_l', 'AnkleLimit_l', 'HipAddLimit_l']:
         highest_order += env_obs['forces'][force]

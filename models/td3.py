@@ -172,6 +172,9 @@ class TD3(object):
         if not os.path.exists(actor_path) or not os.path.exists(critic_path):
             raise RuntimeError(f'File not found: one or both of `{actor_path}`, `{critic_path}`.')
         self.actor.load_state_dict(torch.load(actor_path))
+        self.actor_target.load_state_dict(self.actor.state_dict())
         self.critic.load_state_dict(torch.load(critic_path))
+        self.critic_target.load_state_dict(self.critic.state_dict())
+
         
-        
+  

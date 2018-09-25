@@ -1,46 +1,42 @@
 import uuid
 import pandas as pd
 import numpy as np
+from .database import sample_timesteps
 
 class DatabaseHistorySampler(object):
-    def __init__(self, df_history, env_obs_history_to_model_obs_fn=None, env_obs_custom_reward_fn=None, env_obs_custom_done_fn=None):
+    def __init__(self, env_obs_history_to_model_obs_fn=None, n_obs_history=0, env_obs_custom_reward_fn=None, env_obs_custom_done_fn=None):
         self.env_obs_history_to_model_obs_fn = env_obs_history_to_model_obs_fn
+        # Aggregate 1 extra due to needing `n_obs_history` timesteps of history for both the before obs and after obs.
+        self.aggregate_obs_history = 1 + n_obs_history
         self.env_obs_custom_reward_fn = env_obs_custom_reward_fn
         self.env_obs_custom_done_fn = env_obs_custom_done_fn
         
     def sample(self, batch_size):
-        df_without_resets = self.df_history[~self.df_history['action'].isnull()]
-        i_samples = df_without_resets.sample(batch_size).index
-        
-        # Get episodes corresponding to each sample
-        episodes = [self.get_episode(self.df_history.at[i, 'episode_uuid']) for i in i_samples]
-        # Slice episode to end at sampled step
-        episodes = [ep[ep['i_step'] <= ep.at[i_sample, 'i_step']] for i_sample, ep in zip(i_samples, episodes)]
+        docs_with_history = sample_timesteps(n=batch_size, n_obs_history=self.aggregate_obs_history)
         
         # Collect actions
-        A = [ep.at[i_sample, 'action'] for i_sample, ep in zip(i_samples, episodes)]
+        A = [d['action'] for d in docs_with_history]
         
         # Collect `done`
         if self.env_obs_custom_done_fn != None:
-            D = [ep.at[i_sample, 'done'] | self.env_obs_custom_done_fn(ep.at[i_sample, 'obs']) for i_sample, ep in zip(i_samples, episodes)]
+            D = [d['done'] | self.env_obs_custom_done_fn(d['obs']) for d in docs_with_history]
         else:
-            D = [ep.at[i_sample, 'done'] for i_sample, ep in zip(i_samples, episodes)]
+            D = [d['done'] for d in docs_with_history]
         
         # Collect rewards
         if self.env_obs_custom_reward_fn != None:
-            R = [self.env_obs_custom_reward_fn(ep.at[i_sample, 'obs']) for i_sample, ep in zip(i_samples, episodes)]
+            R = [self.env_obs_custom_reward_fn(d['obs']) for d in docs_with_history]
         else:
-            R = [ep.at[i_sample, 'reward'] for i_sample, ep in zip(i_samples, episodes)]
+            R = [d['reward'] for d in docs_with_history]
             
         # Collect X, Y
         if self.env_obs_history_to_model_obs_fn != None:
-            X = [self.env_obs_history_to_model_obs_fn(ep['obs'].iloc[:-1].tolist()) for ep in episodes]
-            Y = [self.env_obs_history_to_model_obs_fn(ep['obs'].tolist()) for ep in episodes]
+            obslist = lambda d: [d[f'obs_t-{i}'] for i in range(self.aggregate_obs_history,0,-1) if f'obs_t-{i}' in d] + [d['obs']]
+            X = [self.env_obs_history_to_model_obs_fn(obslist(d)[:-1]) for d in docs_with_history]
+            Y = [self.env_obs_history_to_model_obs_fn(obslist(d)[1:]) for d in docs_with_history]
         else:
-            X = [ep.iloc[-2]['obs'] for ep in episodes]
-            Y = [ep.iloc[-1]['obs'] for ep in episodes]
+            X = [d['obs_t-1'] for d in docs_with_history]
+            Y = [d['obs'] for d in docs_with_history]
             
         return np.array(X), np.array(Y), np.array(A), np.array(R), np.array(D)
         
-    def get_episode(self, episode_uuid):
-        return self.df_history[self.df_history['episode_uuid'] == episode_uuid]
