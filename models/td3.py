@@ -164,14 +164,14 @@ class TD3(object):
         torch.save(self.critic.state_dict(), critic_path)
 
 
-    def load(self, directory, filename):
+    def load(self, directory, filename, **kwargs):
         actor_path = '%s/%s_actor.pth' % (directory, filename)
         critic_path = '%s/%s_critic.pth' % (directory, filename)
         if not os.path.exists(actor_path) or not os.path.exists(critic_path):
             raise RuntimeError(f'File not found: one or both of `{actor_path}`, `{critic_path}`.')
-        self.actor.load_state_dict(torch.load(actor_path))
+        self.actor.load_state_dict(torch.load(actor_path, **kwargs))
         self.actor_target.load_state_dict(self.actor.state_dict())
-        self.critic.load_state_dict(torch.load(critic_path))
+        self.critic.load_state_dict(torch.load(critic_path, **kwargs))
         self.critic_target.load_state_dict(self.critic.state_dict())
 
         

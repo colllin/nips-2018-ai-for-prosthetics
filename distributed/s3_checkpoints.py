@@ -2,7 +2,7 @@ import os
 import uuid
 import subprocess
 
-def load_s3_model_checkpoint(policy, s3_dir, basename):
+def load_s3_model_checkpoint(policy, s3_dir, basename, **kwargs):
     # Create temp dir for download
     local_dir = f'./{str(uuid.uuid4())}/'
     os.makedirs(local_dir, exist_ok=True)
@@ -11,7 +11,7 @@ def load_s3_model_checkpoint(policy, s3_dir, basename):
     subprocess.check_output(f'aws s3 cp {s3_dir} {local_dir} --recursive --exclude "*" --include "{basename}*" --no-sign-request', shell=True)
     
     # Load model checkpoint
-    policy.load(local_dir, basename)
+    policy.load(local_dir, basename, **kwargs)
     
     # Remove temp dir
     subprocess.check_output(f'rm -rf {local_dir}', shell=True)
