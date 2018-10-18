@@ -27,16 +27,21 @@ def apply_frameskip(model_action):
     return model_action
 
 
-def prepare_env_action(model_action):
+def prepare_env_action(model_action, bins=2):
     # model_action is a list of muscle activations
 
     # Frame skipping
     model_action = apply_frameskip(model_action)
 
     model_action = np.array(model_action)
-
-    # Binarize the muscle activations
+    
+    # "Bin" the muscle activations:
+    model_action *= bins-1
     model_action = model_action.round()
+    model_action /= bins-1
+
+    # Clip    
+    model_action = np.clip(model_action, 0, 1)
     
     return model_action.tolist()
     
