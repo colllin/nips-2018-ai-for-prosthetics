@@ -65,7 +65,7 @@
     $ jupyter notebook &
     ```
     
-    Visit the link shown, and open `Verify Setup.ipynb`
+    Visit the link shown, and open `scripts/Verify Setup.ipynb`
 
 
 ### Development
