@@ -4,9 +4,9 @@
 
 ![Training converged erroneously after 1.6M timesteps of rollout/training](https://media.giphy.com/media/1gUqnaVepaILezzDps/giphy.gif)
 
-- Time investment
+- Time investment:  
     ~1 month of ~20 hours/week on nights & weekends.
-- What I accomplished
+- What I accomplished:  
     Unfortunately, this competition was heavy on software engineering, leaving me with barely any time remaining to work on the actual RL side of the project.  That being said, I'm sure if I could spend another month on it, the ratio would flip, and most of my time would be dedicated to RL.  I built a distributed training system with 3 pieces:
     - MongoDB: Used for storage of past timesteps as a replay buffer.
     - 1 training instance: a GPU instance in EC2 (I recommend smallest p2) running `Train Distributed.ipynb`, which pulls the latest model checkpoint from S3, trains the model by sampling timesteps from the MongoDB instance, and then updates the model checkpoint in S3.  It performs this task in an endless loop.  It also optionally performs Validation in the background by rolling out 10 episodes and logging the average cumulative reward.
