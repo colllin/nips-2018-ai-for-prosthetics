@@ -11,22 +11,37 @@ This repo contains my work for the NIPS 2018 [AI for Prosthetics Challenge](http
 
 ### What I accomplished
 This competition was heavy on software engineering, which unfortunately left me with barely any time remaining to work on the actual RL side of the project.  That being said, I'm sure if I could spend another month on it, the ratio would flip, and most of my time would be dedicated to RL.
-- I built a distributed training system. 🙌
+- I hooked up a model to the simulator environment and implemented observation hacking, reward hacking, action "binning", frame skipping, and exploratory noise. 🎉
+- I built a distributed training system to reduce the time and cost of training. 🙌
 - I ran two training experiments using a recent variant of DDPG. 💩
 
 ### 2 Experiments
-1. Custom rewards + episode "done" hacking:
-    - I had a huge custom rewards function ("rewards hacking") which I probably never tested enough, but it was intended to essentially "coach" the policy into expected running mechanics.  My understanding was that the competition was meant to aid prosthetics research by helping designers understand how their devices would affect and enable the mechanics of walking and running.  Therefore, we are not really interested in the RL model inventing totally new running mechanics.
-    - I had a function which was intended to detect scenarios which are unlikely to result in a positive outcome, and abort the episode early. For example, if the head went backwards more than 10cm, or more than 50cm outside the intended direction of travel, I aborted the episode early.
-    - I ran the distributed training for about 800k timesteps, and then stopped it because it appeared that the model had converged on a poor solution — each rollout episode was producing an identical result.
-    - I analyzed the timesteps in the database and found some strange numbers right away — most obviously, the observation showed `y` positions (vertical axis) on a large number of timesteps to be *negative*.  Was there a bug in the simulator? Had I configured the simulator's `integrator_accuracy` to be too low (too high of a convergence threshold)?  Looking at more of the data, I found that a large number of the action values were `-1`, but the valid range of action values is `[0,1]`. Clearly there is a bug in my code for "binning" the actions, which was intended to be binary for this experiment (only ever 0 or 1).
-1. Default rewards + no episode hacking + fixed `-1 action` bug
-    - I threw out all the timesteps from before.
-    - I threw out the custom rewards function since I didn't have time to debug it, and it was fairly complicated, and could have been causing more problems than benefits.
-    - I fixed the `-1 action` bug.
-    - I removed the episode hacking, because I was concerned that it might negatively impact training due to the model's estimation of future rewards. Essentially, by aborting the episode early without also coordinating a large negative reward, the model might capitalize on a sweet spot which maximizes the short term reward before aborting the episode.  Comparatively, if the model performs the goal behavior but I then allow it to fall forward for a dozen timesteps, resulting in a large negative cumulative reward, it might be deterred from exploring this behavior further.
-    - I ran ~25k steps of random exploration to seed the database.
-    - I ran the distributed training for 1.6M timesteps, at which point I killed the training, because, again, the model appeared to converge at an undesirable behavior (as seen in the GIF above).
+Both experiments used the same custom observation (see `environment/observations.py`):
+- Every body position value from the current observation state dict, transformed to be relative to the center of mass's absolute position.
+- Every body velocity value from the current observation state dict, transformed to be relative to the center of mass's absolute velocity.
+- Every body acceleration value from the current observation state dict, transformed to be relative to the center of mass's absolute acceleration.
+- Every other value from the environment's current observation dict, including joint orientations, rotations, and accelerations, muscle forces and fiber lengths, etc.
+- The center of mass's velocity relative to the target velocity (e.g. `[-1, 0, 0]` if the model is 1 m/s slower than the target velocity along the x axis).  This was intended to be a stepping stone to the second phase of the competition, where the target velocity is variable, and we need to communicate the instantaneous target velocity to the model. 
+- The highest-order observation values from the past three timesteps. For example, I would exclude body position and velocity vectors from the previous timestep since those values are accounted for in the current observation's velocity and acceleration vectors. Then the previous timestep's acceleration vector combined with the current timestep's pos,vel,acc vectors mean the pos,vel information from 2 timesteps ago is not interesting information.  The idea in including the previous timesteps is to allow the model to compute higher-order derivatives.  The idea of dropping most of the previous information was mostly just to reduce the observation size, which still ended up at 1,260 values.
+
+Both experiments (intended to have) used the same action handling (see `environment/actions.py`):
+- Binning into 2 bins (binary actions, either 0 or 1). This idea came from the winning solution from last year's **Learn to Run** challenge.
+- Frame skipping during rollout
+- Exploratory noise during rollout (see `Rollout Distributed.ipynb`)
+
+#### Experiment 1: Custom rewards + episode "done" hacking:
+- I had a huge custom rewards function (see `environment/rewards.py`) which I probably never tested enough, but it was intended to essentially "coach" the policy into expected running mechanics.  My understanding was that the competition was meant to aid prosthetics research by helping designers understand how their devices would affect and enable the mechanics of walking and running.  Therefore, we are not really interested in the RL model inventing totally new running mechanics.
+- I had a function which was intended to detect scenarios which are unlikely to result in a positive outcome, and abort the episode early. For example, if the head went backwards more than 10cm, or more than 50cm outside the intended direction of travel, I aborted the episode early.
+- I ran the distributed training for about 800k timesteps, and then stopped it because it appeared that the model had converged on a poor solution — each rollout episode was producing an identical result.
+- I analyzed the timesteps in the database and found some strange numbers right away — most obviously, the observation showed `y` positions (vertical axis) on a large number of timesteps to be *negative*.  Was there a bug in the simulator? Had I configured the simulator's `integrator_accuracy` to be too low (too high of a convergence threshold)?  Looking at more of the data, I found that a large number of the action values were `-1`, but the valid range of action values is `[0,1]`. Clearly there is a bug in my code for "binning" the actions, which was intended to be binary for this experiment (only ever 0 or 1).
+
+#### Experiment 2: Default rewards + no episode hacking + fixed `-1 action` bug
+- I threw out all the timesteps from before.
+- I threw out the custom rewards function since I didn't have time to debug it, and it was fairly complicated, and could have been causing more problems than benefits.
+- I fixed the `-1 action` bug.
+- I removed the episode hacking, because I was concerned that it might negatively impact training due to the model's estimation of future rewards. Essentially, by aborting the episode early without also coordinating a large negative reward, the model might capitalize on a sweet spot which maximizes the short term reward before aborting the episode.  Comparatively, if the model performs the goal behavior but I then allow it to fall forward for a dozen timesteps, resulting in a large negative cumulative reward, it might be deterred from exploring this behavior further.
+- I ran ~25k steps of random exploration to seed the database.
+- I ran the distributed training for 1.6M timesteps, at which point I killed the training, because, again, the model appeared to converge at an undesirable behavior (as seen in the GIF above).
 
 ### That distributed training system, though.
 The distributed training system has 4 components:
