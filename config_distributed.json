@@ -9,7 +9,7 @@
         "#": "Max number of steps to run for a single episode",
         "max_episode_steps": 600,
         "#": "Std of Gaussian exploration noise  # originally 0.1, adjusted due to action binning",
-        "expl_noise": 0.25,
+        "expl_noise": 0.1,
         "#": "Frameskip will be applied for random durations between 0 and `frameskip` timesteps.",
         "frameskip": 5
     },
