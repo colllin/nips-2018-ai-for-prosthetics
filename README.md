@@ -194,7 +194,22 @@ These instructions are intended to work on **Ubuntu 16.04**.  For MacOS, follow 
 1. Go back to your (1 or more) c5 instances.
     1. Update the location of your S3 bucket in `Rollout Distributed.ipynb`.
     1. Run the `Rollout Distributed.ipynb` notebook indefinitely.
-1. Bonus tip for running your c5 rollout instances as a spot fleet: You will want to use `EC2-spot-user-data.sh` as the User Data script in your "launch template".
+    
+## Running on spot instances
+1. Launch a small c5 instance on EC2 on-demand and setup the python environment as described above.
+1. Ensure that you are able to (manually) run the `Rollout Distributed.ipynb` notebook.
+    If you're trying to run training and/or MongoDB on a spot instance, you'll want to manually test those things instead, including testing for outside port access, successful database authentication, etc.
+1. Create an image of your instance from the EC2 console (right click > Image > Create).
+1. Create a "launch template" in the EC2 console using your image and snapshot.
+    Copy the contents of `EC2-spot-user-data.sh` as the **User Data** script under **Advanced Settings**. This script will run the `Rollout Distributed.ipynb` notebook until completion or failure, and then shutdown the instance. You can probably modify the script to work for training and hosting the MongoDB instance if desired.
+1. Create a Spot Request in the EC2 console with the "launch and maintain" option to launch a fleet of spot instances. 
+    - Select the launch template & version which you just created.
+    - I recommend setting an expiration on the request (I usually choose 24 hours from now) to avoid a financial disaster.
+1. AWS will launch the specified number of spot instances and run the User Data script at startup.
 
+### Tips for debugging your spot instances
+The User Data script is run as the root user, not the same `ubuntu` user as when you `ssh` into the EC2 instance, which can make it difficult to debug — just because you can execute the commands as `ubuntu` doesn't mean they'll work for the root user, partially because your paths aren't setup the same.  Maybe you can figure out how to login as the `ubuntu` user but I found it easier to hack some of the paths and load the `ubuntu` default bash profile. 
+
+You can configure your spot instances to `Stop` rather than `Terminate` — I can't remember if this goes in your Spot Request or your Launch Template — which preserves the startup/boot logs on the device.  You can then manually `Start` the instance from the EC2 console in the Instances list, `ssh` into the instance, and `tail` the log to see what happened.  I can't remember off the top of my head where the log file is, but if you find it, please send a quick PR or issue.  It should be easy to Google it.
 
 
