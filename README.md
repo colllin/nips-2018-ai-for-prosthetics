@@ -192,8 +192,9 @@ These instructions are intended to work on **Ubuntu 16.04**.  For MacOS, follow 
     1. Run the notebook indefinitely.
     1. Uncomment the part where it loads the model checkpoint from S3, so that if you restart this notebook in the future, you will continue training where you left off.
 1. Go back to your (1 or more) c5 instances.
-    1. Update the location of your S3 bucket.
+    1. Update the location of your S3 bucket in `Rollout Distributed.ipynb`.
     1. Run the `Rollout Distributed.ipynb` notebook indefinitely.
+1. Bonus tip for running your c5 rollout instances as a spot fleet: You will want to use `EC2-spot-user-data.sh` as the User Data script in your "launch template".
 
 
 
