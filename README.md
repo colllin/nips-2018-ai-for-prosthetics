@@ -84,7 +84,7 @@ On the second experiment, I trained for 24 hours with one on-demand p2 instance 
 - Implement a prioritized replay buffer to better focus the training on the most interesting known parts of the solution space.  This would allow me to make better use of my GPU instance by running more rollout nodes simultaneously, since I know that the more recent or better episodes will be prioritized, and don't need to worry that more random episodes will dilute the signal from more interesting observation/action spaces.
 - Finish validating and implementing the reward hacking to "coach" the model into reasonable running form.  I would probably take a more iterative approach next time — train the model some, see where it's going wrong, e.g. the legs are crossing each other!  Then implement a reward (or penalty) to teach it to avoid this behavior.
 
-### Setup
+## Getting started: Python environment setup
 
 These instructions are intended to work on **Ubuntu 16.04**.  For MacOS, follow the setup instructions on the osim-rl repo, and I recommend using conda.
 
@@ -153,7 +153,7 @@ These instructions are intended to work on **Ubuntu 16.04**.  For MacOS, follow 
     Visit the link shown, and open `scripts/Verify Setup.ipynb`
 
 
-### Setup for distributed training
+## Setup for distributed training
 
 1. Launch a MongoDB instance
     The easiest (but expensive) solution is to sign up for a hosted DB on mongodb.com.  I would expect to need the tier which costs $20-50/month depending on how many timesteps you collect.
