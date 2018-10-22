@@ -86,7 +86,7 @@ On the second experiment, I trained for 24 hours with one on-demand p2 instance 
 
 ## Getting started: Python environment setup
 
-These instructions are intended to work on **Ubuntu 16.04**.  For MacOS, follow the setup instructions on the osim-rl repo, and I recommend using conda.
+These instructions are intended to work on **Ubuntu 16.04**.  For MacOS, follow the setup instructions on the osim-rl repo, and I recommend using conda, as they suggest.
 
 1. Download and extract OpenSim build from conda package.
     Choose download link from https://anaconda.org/kidzik/opensim/files (latest version for your OS)
