@@ -30,12 +30,14 @@ Both experiments (intended to have) used the same action handling (see `environm
 - Exploratory noise during rollout (see `Rollout Distributed.ipynb`)
 
 #### Experiment 1: Custom rewards + episode "done" hacking:
+![Experiment 1 Result](https://media.giphy.com/media/14dYwKLvJ0OwPdh8BX/giphy.gif)
 - I had a huge custom rewards function (see `environment/rewards.py`) which I probably never tested enough, but it was intended to essentially "coach" the policy into expected running mechanics.  My understanding was that the competition was meant to aid prosthetics research by helping designers understand how their devices would affect and enable the mechanics of walking and running.  Therefore, we are not really interested in the RL model inventing totally new running mechanics.
 - I had a function which was intended to detect scenarios which are unlikely to result in a positive outcome, and abort the episode early. For example, if the head went backwards more than 10cm, or more than 50cm outside the intended direction of travel, I aborted the episode early.
 - I ran the distributed training for about 800k timesteps, and then stopped it because it appeared that the model had converged on a poor solution — each rollout episode was producing an identical result.
 - I analyzed the timesteps in the database and found some strange numbers right away — most obviously, the observation showed `y` positions (vertical axis) on a large number of timesteps to be *negative*.  Was there a bug in the simulator? Had I configured the simulator's `integrator_accuracy` to be too low (too high of a convergence threshold)?  Looking at more of the data, I found that a large number of the action values were `-1`, but the valid range of action values is `[0,1]`. Clearly there is a bug in my code for "binning" the actions, which was intended to be binary for this experiment (only ever 0 or 1).
 
 #### Experiment 2: Default rewards + no episode hacking + fixed `-1 action` bug
+![Experiment 2 result](https://media.giphy.com/media/8vzrzWuUnugpBYQDPl/giphy.gif)
 - I threw out all the timesteps from before.
 - I threw out the custom rewards function since I didn't have time to debug it, and it was fairly complicated, and could have been causing more problems than benefits.
 - I fixed the `-1 action` bug.
